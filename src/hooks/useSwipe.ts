@@ -22,9 +22,33 @@ export const useSwipe = ({ onSwipeLeft, onSwipeRight, threshold = 100 }: SwipeOp
     return target.closest('[data-no-swipe="true"]') !== null;
   };
 
-  const handleStart = useCallback((clientX: number, event: MouseEvent | TouchEvent) => {
+  const isInSwipeZone = (clientY: number): boolean => {
+    if (!elementRef.current) return false;
+    
+    const cardRect = elementRef.current.getBoundingClientRect();
+    const playButton = elementRef.current.querySelector('.play-button');
+    
+    if (!playButton) {
+      // Fallback: allow swipe in upper 60% of card if play button not found
+      const fallbackThreshold = cardRect.top + (cardRect.height * 0.6);
+      return clientY < fallbackThreshold;
+    }
+    
+    const playButtonRect = playButton.getBoundingClientRect();
+    const playButtonMiddle = playButtonRect.top + (playButtonRect.height / 2);
+    
+    // Allow swipe only above the middle of the play button
+    return clientY < playButtonMiddle;
+  };
+
+  const handleStart = useCallback((clientX: number, clientY: number, event: MouseEvent | TouchEvent) => {
     // Don't start swipe if clicking/touching in a no-swipe zone
     if (isNoSwipeZone(event.target)) {
+      return;
+    }
+    
+    // Don't start swipe if not in the allowed swipe zone (upper area)
+    if (!isInSwipeZone(clientY)) {
       return;
     }
     
@@ -67,11 +91,11 @@ export const useSwipe = ({ onSwipeLeft, onSwipeRight, threshold = 100 }: SwipeOp
   }, [isDragging, dragPosition, threshold, onSwipeLeft, onSwipeRight]);
 
   const handlers = {
-    onMouseDown: (e: React.MouseEvent) => handleStart(e.clientX, e.nativeEvent),
+    onMouseDown: (e: React.MouseEvent) => handleStart(e.clientX, e.clientY, e.nativeEvent),
     onMouseMove: (e: React.MouseEvent) => handleMove(e.clientX, e.nativeEvent),
     onMouseUp: handleEnd,
     onMouseLeave: handleEnd,
-    onTouchStart: (e: React.TouchEvent) => handleStart(e.touches[0].clientX, e.nativeEvent),
+    onTouchStart: (e: React.TouchEvent) => handleStart(e.touches[0].clientX, e.touches[0].clientY, e.nativeEvent),
     onTouchMove: (e: React.TouchEvent) => handleMove(e.touches[0].clientX, e.nativeEvent),
     onTouchEnd: handleEnd,
   };

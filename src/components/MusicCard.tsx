@@ -21,7 +21,7 @@ interface MusicCardProps {
 }
 
 const MusicCard = ({ song, onApprove, onReject, isLoading = false }: MusicCardProps) => {
-  const { handlers, dragPosition, swipeDirection, swipeIntensity, isDragging } = useSwipe({
+  const { handlers, dragPosition, swipeDirection, swipeIntensity, isDragging, elementRef } = useSwipe({
     onSwipeLeft: () => onReject(song.id),
     onSwipeRight: () => onApprove(song.id),
     threshold: 100,
@@ -32,6 +32,7 @@ const MusicCard = ({ song, onApprove, onReject, isLoading = false }: MusicCardPr
 
   return (
     <div
+      ref={elementRef}
       className={`music-card w-full max-w-sm mx-auto p-8 text-white relative cursor-grab transition-all duration-200 touch-none select-none ${
         isDragging ? 'cursor-grabbing shadow-2xl' : ''
       }`}
@@ -91,7 +92,7 @@ const MusicCard = ({ song, onApprove, onReject, isLoading = false }: MusicCardPr
           Swipe left to dislike • Swipe right to like
         </p>
         <p className="text-white/30 text-xs mt-1">
-          (Audio controls don't trigger swipe)
+          (Swipe only works in the upper area above the play button)
         </p>
       </div>
     </div>
