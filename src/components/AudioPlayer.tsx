@@ -14,8 +14,10 @@ const AudioPlayer = ({ src }: AudioPlayerProps) => {
   const [volume, setVolume] = useState(70);
   const [isProgressHovered, setIsProgressHovered] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
+  const [isVolumeDragging, setIsVolumeDragging] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
   const progressBarRef = useRef<HTMLDivElement>(null);
+  const volumeBarRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -53,32 +55,107 @@ const AudioPlayer = ({ src }: AudioPlayerProps) => {
     setIsPlaying(!isPlaying);
   };
 
-  const handleProgressClick = (e: React.MouseEvent<HTMLDivElement>) => {
+  const updateProgress = (clientX: number) => {
     const audio = audioRef.current;
     const progressBar = progressBarRef.current;
     if (!audio || !progressBar || !duration) return;
 
     const rect = progressBar.getBoundingClientRect();
-    const clickX = e.clientX - rect.left;
-    const percentage = clickX / rect.width;
+    const clickX = clientX - rect.left;
+    const percentage = Math.max(0, Math.min(1, clickX / rect.width));
     const newTime = percentage * duration;
     
     audio.currentTime = newTime;
     setCurrentTime(newTime);
   };
 
-  const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
+  const updateVolume = (clientX: number) => {
+    const volumeBar = volumeBarRef.current;
+    if (!volumeBar) return;
+
+    const rect = volumeBar.getBoundingClientRect();
+    const clickX = clientX - rect.left;
+    const percentage = Math.max(0, Math.min(1, clickX / rect.width));
+    const newVolume = percentage * 100;
+    
+    setVolume(newVolume);
+  };
+
+  const handleProgressClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    updateProgress(e.clientX);
+  };
+
+  const handleProgressMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
+    e.stopPropagation();
     setIsDragging(true);
-    handleProgressClick(e);
+    updateProgress(e.clientX);
   };
 
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+  const handleProgressMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!isDragging) return;
-    handleProgressClick(e);
+    e.stopPropagation();
+    updateProgress(e.clientX);
   };
 
-  const handleMouseUp = () => {
+  const handleProgressMouseUp = (e: React.MouseEvent<HTMLDivElement>) => {
+    e.stopPropagation();
     setIsDragging(false);
+  };
+
+  // Touch handlers for progress bar
+  const handleProgressTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
+    e.stopPropagation();
+    setIsDragging(true);
+    updateProgress(e.touches[0].clientX);
+  };
+
+  const handleProgressTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
+    if (!isDragging) return;
+    e.stopPropagation();
+    e.preventDefault();
+    updateProgress(e.touches[0].clientX);
+  };
+
+  const handleProgressTouchEnd = (e: React.TouchEvent<HTMLDivElement>) => {
+    e.stopPropagation();
+    setIsDragging(false);
+  };
+
+  // Volume control handlers
+  const handleVolumeMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
+    e.stopPropagation();
+    setIsVolumeDragging(true);
+    updateVolume(e.clientX);
+  };
+
+  const handleVolumeMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!isVolumeDragging) return;
+    e.stopPropagation();
+    updateVolume(e.clientX);
+  };
+
+  const handleVolumeMouseUp = (e: React.MouseEvent<HTMLDivElement>) => {
+    e.stopPropagation();
+    setIsVolumeDragging(false);
+  };
+
+  // Touch handlers for volume
+  const handleVolumeTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
+    e.stopPropagation();
+    setIsVolumeDragging(true);
+    updateVolume(e.touches[0].clientX);
+  };
+
+  const handleVolumeTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
+    if (!isVolumeDragging) return;
+    e.stopPropagation();
+    e.preventDefault();
+    updateVolume(e.touches[0].clientX);
+  };
+
+  const handleVolumeTouchEnd = (e: React.TouchEvent<HTMLDivElement>) => {
+    e.stopPropagation();
+    setIsVolumeDragging(false);
   };
 
   const formatTime = (time: number) => {
@@ -107,7 +184,7 @@ const AudioPlayer = ({ src }: AudioPlayerProps) => {
         </Button>
       </div>
 
-      {/* Progress Bar with Hover Slider */}
+      {/* Progress Bar with Enhanced Touch Support */}
       <div className="space-y-3">
         <div 
           className="relative cursor-pointer group"
@@ -117,28 +194,31 @@ const AudioPlayer = ({ src }: AudioPlayerProps) => {
               setIsProgressHovered(false);
             }
           }}
-          onMouseDown={handleMouseDown}
-          onMouseMove={handleMouseMove}
-          onMouseUp={handleMouseUp}
+          onMouseDown={handleProgressMouseDown}
+          onMouseMove={handleProgressMouseMove}
+          onMouseUp={handleProgressMouseUp}
+          onTouchStart={handleProgressTouchStart}
+          onTouchMove={handleProgressTouchMove}
+          onTouchEnd={handleProgressTouchEnd}
           ref={progressBarRef}
         >
           {/* Background Track */}
-          <div className="progress-bar h-1 w-full transition-all duration-200 group-hover:h-2">
+          <div className="progress-bar h-2 md:h-1 w-full transition-all duration-200 group-hover:h-2">
             <div 
               className="absolute top-0 left-0 h-full bg-gradient-to-r from-pink-400 to-purple-500 rounded-full transition-all duration-300"
               style={{ width: `${progress}%` }}
             />
           </div>
           
-          {/* Interactive Slider Handle - appears on hover */}
+          {/* Interactive Slider Handle */}
           <div 
-            className={`absolute top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-white shadow-lg transition-all duration-200 ${
+            className={`absolute top-1/2 -translate-y-1/2 w-5 h-5 md:w-4 md:h-4 rounded-full bg-white shadow-lg transition-all duration-200 ${
               isProgressHovered || isDragging 
                 ? 'opacity-100 scale-100' 
-                : 'opacity-0 scale-75'
+                : 'opacity-0 md:opacity-0 scale-75'
             }`}
             style={{ 
-              left: `calc(${progress}% - 8px)`,
+              left: `calc(${progress}% - ${progress > 95 ? '20px' : progress < 5 ? '0px' : '10px'})`,
               background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.7))',
               backdropFilter: 'blur(10px)',
               border: '1px solid rgba(255, 255, 255, 0.3)',
@@ -165,30 +245,31 @@ const AudioPlayer = ({ src }: AudioPlayerProps) => {
         </div>
       </div>
 
-      {/* Volume Control */}
+      {/* Volume Control with Enhanced Touch Support */}
       <div className="flex items-center gap-3 pt-4">
         <Volume2 className="w-4 h-4 text-white/70" />
-        <div className="flex-1 relative group">
-          <div className="progress-bar h-1 w-full transition-all duration-200 group-hover:h-2">
+        <div 
+          className="flex-1 relative group cursor-pointer"
+          onMouseDown={handleVolumeMouseDown}
+          onMouseMove={handleVolumeMouseMove}
+          onMouseUp={handleVolumeMouseUp}
+          onTouchStart={handleVolumeTouchStart}
+          onTouchMove={handleVolumeTouchMove}
+          onTouchEnd={handleVolumeTouchEnd}
+          ref={volumeBarRef}
+        >
+          <div className="progress-bar h-2 md:h-1 w-full transition-all duration-200 group-hover:h-2">
             <div 
               className="absolute top-0 left-0 h-full bg-gradient-to-r from-pink-400 to-purple-500 rounded-full transition-all duration-300"
               style={{ width: `${volume}%` }}
             />
           </div>
-          <input
-            type="range"
-            min="0"
-            max="100"
-            value={volume}
-            onChange={(e) => setVolume(Number(e.target.value))}
-            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-          />
           
           {/* Volume Handle */}
           <div 
-            className="absolute top-1/2 -translate-y-1/2 w-3 h-3 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-200"
+            className="absolute top-1/2 -translate-y-1/2 w-4 h-4 md:w-3 md:h-3 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-200"
             style={{ 
-              left: `calc(${volume}% - 6px)`,
+              left: `calc(${volume}% - ${volume > 95 ? '16px' : volume < 5 ? '0px' : '8px'})`,
               background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.7))',
               backdropFilter: 'blur(10px)',
               border: '1px solid rgba(255, 255, 255, 0.3)',
