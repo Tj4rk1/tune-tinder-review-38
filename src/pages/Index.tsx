@@ -23,29 +23,38 @@ const Index = () => {
   // Fetch songs from Supabase
   const fetchSongs = async () => {
     try {
+      console.log('Fetching songs from Supabase...');
+      
       const { data, error } = await supabase
         .from('Storage Generative Music')
         .select('id, name, streamURL, Approved')
         .order('created_at', { ascending: true });
 
       if (error) {
-        console.error('Error fetching songs:', error);
+        console.error('Supabase error:', error);
         toast({
-          title: "Error",
-          description: "Failed to load tracks from database.",
+          title: "Database Error",
+          description: `Failed to load tracks: ${error.message}`,
           variant: "destructive",
         });
         return;
       }
 
       console.log('Fetched songs:', data);
-      console.log('Raw data for debugging:', JSON.stringify(data, null, 2));
-      setSongs(data || []);
+      console.log('Number of songs fetched:', data?.length || 0);
+      
+      const validSongs = (data || []).filter(song => 
+        song.id && song.name && song.streamURL
+      );
+      
+      console.log('Valid songs after filtering:', validSongs.length);
+      setSongs(validSongs);
+      
     } catch (error) {
-      console.error('Error fetching songs:', error);
+      console.error('Network error fetching songs:', error);
       toast({
-        title: "Error",
-        description: "Failed to connect to database.",
+        title: "Connection Error",
+        description: "Failed to connect to database. Please check your connection.",
         variant: "destructive",
       });
     } finally {
@@ -63,18 +72,28 @@ const Index = () => {
       console.log(`Song ${song.id} (${song.name}): Approved="${song.Approved}", isUnreviewed=${isUnreviewed}`);
       return isUnreviewed;
     });
+    
     console.log('Total songs:', songs.length);
-    console.log('Unreviewed songs:', unreviewed.length, unreviewed);
-    return unreviewed.length > 0 ? unreviewed[0] : null;
+    console.log('Unreviewed songs:', unreviewed.length);
+    
+    if (unreviewed.length === 0) {
+      console.log('No unreviewed songs found');
+      return null;
+    }
+    
+    console.log('Next song to review:', unreviewed[0]);
+    return unreviewed[0];
   };
 
   useEffect(() => {
+    console.log('Component mounted, fetching songs...');
     fetchSongs();
   }, []);
 
   useEffect(() => {
-    console.log('Setting current song from songs:', songs.length);
-    setCurrentSong(getNextSong());
+    console.log('Songs updated, finding next song...', songs.length);
+    const nextSong = getNextSong();
+    setCurrentSong(nextSong);
   }, [songs]);
 
   const handleApprove = async (songId: number) => {
@@ -82,7 +101,6 @@ const Index = () => {
     console.log('Approving song:', songId);
 
     try {
-      // Update song in Supabase with "yes" for approved
       const { error } = await supabase
         .from('Storage Generative Music')
         .update({ Approved: 'yes' })
@@ -91,8 +109,8 @@ const Index = () => {
       if (error) {
         console.error('Error updating song:', error);
         toast({
-          title: "Error",
-          description: "Failed to approve track. Please try again.",
+          title: "Update Error",
+          description: `Failed to approve track: ${error.message}`,
           variant: "destructive",
         });
         return;
@@ -105,14 +123,14 @@ const Index = () => {
 
       // Optional webhook call for approved songs
       try {
-        await fetch('https://n8n.stoked-ai.com/webhook/song-approved', {
+        const response = await fetch('https://n8n.stoked-ai.com/webhook/song-approved', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({ song_id: songId }),
         });
-        console.log('Webhook called successfully');
+        console.log('Webhook response status:', response.status);
       } catch (webhookError) {
         console.log('Webhook call failed (optional):', webhookError);
       }
@@ -138,7 +156,6 @@ const Index = () => {
     console.log('Rejecting song:', songId);
 
     try {
-      // Update song in Supabase with "no" for rejected
       const { error } = await supabase
         .from('Storage Generative Music')
         .update({ Approved: 'no' })
@@ -147,8 +164,8 @@ const Index = () => {
       if (error) {
         console.error('Error updating song:', error);
         toast({
-          title: "Error",
-          description: "Failed to reject track. Please try again.",
+          title: "Update Error",
+          description: `Failed to reject track: ${error.message}`,
           variant: "destructive",
         });
         return;
@@ -176,11 +193,12 @@ const Index = () => {
   };
 
   const refreshSongs = () => {
+    console.log('Manually refreshing songs...');
     setIsInitialLoading(true);
     fetchSongs();
     toast({
       title: "Refreshed",
-      description: "Loaded latest tracks from database.",
+      description: "Loading latest tracks from database.",
     });
   };
 
@@ -238,7 +256,17 @@ const Index = () => {
           </div>
         ) : (
           <div className="space-y-6">
-            <CompletionMessage />
+            {songs.length === 0 ? (
+              <div className="text-center space-y-4">
+                <div className="w-16 h-16 mx-auto bg-gray-800 rounded-full flex items-center justify-center">
+                  <Music className="w-8 h-8 text-gray-400" />
+                </div>
+                <h2 className="text-2xl font-bold text-white">No Tracks Found</h2>
+                <p className="text-gray-400">There are no tracks in the database yet.</p>
+              </div>
+            ) : (
+              <CompletionMessage />
+            )}
             <div className="text-center">
               <Button
                 onClick={refreshSongs}
