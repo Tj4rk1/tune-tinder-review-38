@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import MusicCard from '@/components/MusicCard';
 import CompletionMessage from '@/components/CompletionMessage';
@@ -23,7 +22,7 @@ const Index = () => {
   // Fetch songs from Supabase
   const fetchSongs = async () => {
     try {
-      console.log('Fetching songs from Supabase...');
+      console.log('=== STARTING SONG FETCH ===');
       
       const { data, error } = await supabase
         .from('Storage Generative Music')
@@ -40,14 +39,50 @@ const Index = () => {
         return;
       }
 
-      console.log('Fetched songs:', data);
-      console.log('Number of songs fetched:', data?.length || 0);
+      console.log('=== RAW DATABASE RESPONSE ===');
+      console.log('Total records fetched:', data?.length || 0);
+      console.log('Raw data:', data);
       
-      const validSongs = (data || []).filter(song => 
-        song.id && song.name && song.streamURL
-      );
+      if (!data || data.length === 0) {
+        console.log('❌ No data returned from database');
+        setSongs([]);
+        return;
+      }
+
+      console.log('=== DETAILED SONG ANALYSIS ===');
+      data.forEach((song, index) => {
+        console.log(`Song ${index + 1}:`, {
+          id: song.id,
+          name: song.name,
+          streamURL: song.streamURL,
+          streamURL_type: typeof song.streamURL,
+          streamURL_length: song.streamURL?.length || 0,
+          Approved: song.Approved,
+          Approved_type: typeof song.Approved,
+          hasId: !!song.id,
+          hasName: !!song.name,
+          hasStreamURL: !!song.streamURL,
+          streamURLTrimmed: song.streamURL?.trim() || '',
+          isValid: !!(song.id && song.name && song.streamURL && song.streamURL.trim())
+        });
+      });
+
+      // More lenient validation - only require id and name, streamURL can be empty string
+      const validSongs = (data || []).filter(song => {
+        const isValid = song.id && song.name;
+        console.log(`Song ${song.id} validation:`, {
+          name: song.name,
+          hasId: !!song.id,
+          hasName: !!song.name,
+          isValid: isValid
+        });
+        return isValid;
+      });
       
-      console.log('Valid songs after filtering:', validSongs.length);
+      console.log('=== VALIDATION RESULTS ===');
+      console.log('Songs after validation:', validSongs.length);
+      console.log('Valid songs:', validSongs);
+      
       setSongs(validSongs);
       
     } catch (error) {
@@ -64,25 +99,34 @@ const Index = () => {
 
   // Get next unreviewed song - check for null, undefined, or empty string
   const getNextSong = () => {
+    console.log('=== FINDING NEXT SONG ===');
+    
     const unreviewed = songs.filter(song => {
       const isUnreviewed = song.Approved === null || 
                           song.Approved === undefined || 
                           song.Approved === '' || 
                           song.Approved === 'NULL';
-      console.log(`Song ${song.id} (${song.name}): Approved="${song.Approved}", isUnreviewed=${isUnreviewed}`);
+      console.log(`Song ${song.id} (${song.name}):`, {
+        Approved: song.Approved,
+        ApprovedType: typeof song.Approved,
+        isUnreviewed: isUnreviewed
+      });
       return isUnreviewed;
     });
     
-    console.log('Total songs:', songs.length);
-    console.log('Unreviewed songs:', unreviewed.length);
+    console.log('=== FILTERING RESULTS ===');
+    console.log('Total songs available:', songs.length);
+    console.log('Unreviewed songs found:', unreviewed.length);
+    console.log('Unreviewed songs:', unreviewed);
     
     if (unreviewed.length === 0) {
-      console.log('No unreviewed songs found');
+      console.log('❌ No unreviewed songs found');
       return null;
     }
     
-    console.log('Next song to review:', unreviewed[0]);
-    return unreviewed[0];
+    const nextSong = unreviewed[0];
+    console.log('✅ Next song to review:', nextSong);
+    return nextSong;
   };
 
   useEffect(() => {
@@ -91,9 +135,14 @@ const Index = () => {
   }, []);
 
   useEffect(() => {
-    console.log('Songs updated, finding next song...', songs.length);
+    console.log('=== SONGS STATE UPDATED ===');
+    console.log('Songs count:', songs.length);
+    console.log('Songs data:', songs);
+    
     const nextSong = getNextSong();
     setCurrentSong(nextSong);
+    
+    console.log('Current song set to:', nextSong);
   }, [songs]);
 
   const handleApprove = async (songId: number) => {
@@ -263,6 +312,7 @@ const Index = () => {
                 </div>
                 <h2 className="text-2xl font-bold text-white">No Tracks Found</h2>
                 <p className="text-gray-400">There are no tracks in the database yet.</p>
+                <p className="text-gray-500 text-sm">Check the console for detailed debugging information.</p>
               </div>
             ) : (
               <CompletionMessage />
