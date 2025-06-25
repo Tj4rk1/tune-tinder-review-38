@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import MusicCard from '@/components/MusicCard';
 import CompletionMessage from '@/components/CompletionMessage';
@@ -126,10 +125,10 @@ const Index = () => {
     console.log('Rejecting song:', songId);
 
     try {
-      // Update song in Supabase - leave Approved empty (null)
+      // Update song in Supabase with "no" for rejected
       const { error } = await supabase
         .from('Storage Generative Music')
-        .update({ Approved: null })
+        .update({ Approved: 'no' })
         .eq('id', songId);
 
       if (error) {
@@ -144,7 +143,7 @@ const Index = () => {
 
       // Update local state
       setSongs(prev => prev.map(song => 
-        song.id === songId ? { ...song, Approved: null } : song
+        song.id === songId ? { ...song, Approved: 'no' } : song
       ));
 
       toast({
@@ -234,7 +233,9 @@ const Index = () => {
       {/* Footer */}
       <footer className="p-4 text-center text-gray-500 text-sm border-t border-gray-800">
         <div className="flex items-center justify-center gap-4">
-          <span>Reviewed: {songs.filter(s => s.Approved === 'yes').length}</span>
+          <span>Approved: {songs.filter(s => s.Approved === 'yes').length}</span>
+          <span>•</span>
+          <span>Rejected: {songs.filter(s => s.Approved === 'no').length}</span>
           <span>•</span>
           <span>Remaining: {songs.filter(s => !s.Approved).length}</span>
         </div>
