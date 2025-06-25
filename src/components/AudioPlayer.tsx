@@ -90,7 +90,7 @@ const AudioPlayer = ({ src }: AudioPlayerProps) => {
   const progress = duration ? (currentTime / duration) * 100 : 0;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-no-swipe="true">
       <audio ref={audioRef} src={src} preload="metadata" />
       
       {/* Play/Pause Button */}

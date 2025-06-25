@@ -58,7 +58,7 @@ const MusicCard = ({ song, onApprove, onReject, isLoading = false }: MusicCardPr
         </h2>
       </div>
 
-      {/* Audio Player */}
+      {/* Audio Player - No Swipe Zone */}
       <div className="mb-8">
         <AudioPlayer src={song.stream_url} />
       </div>
@@ -88,6 +88,9 @@ const MusicCard = ({ song, onApprove, onReject, isLoading = false }: MusicCardPr
       <div className="mt-4 text-center md:hidden">
         <p className="text-white/50 text-xs">
           Swipe left to dislike • Swipe right to like
+        </p>
+        <p className="text-white/30 text-xs mt-1">
+          (Audio controls don't trigger swipe)
         </p>
       </div>
     </div>
