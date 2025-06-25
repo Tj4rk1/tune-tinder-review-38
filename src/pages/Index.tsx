@@ -39,6 +39,7 @@ const Index = () => {
       }
 
       console.log('Fetched songs:', data);
+      console.log('Raw data for debugging:', JSON.stringify(data, null, 2));
       setSongs(data || []);
     } catch (error) {
       console.error('Error fetching songs:', error);
@@ -52,10 +53,18 @@ const Index = () => {
     }
   };
 
-  // Get next unreviewed song - properly handle null/empty values
+  // Get next unreviewed song - check for null, undefined, or empty string
   const getNextSong = () => {
-    const unreviewed = songs.filter(song => song.Approved === null || song.Approved === '');
-    console.log('Unreviewed songs:', unreviewed);
+    const unreviewed = songs.filter(song => {
+      const isUnreviewed = song.Approved === null || 
+                          song.Approved === undefined || 
+                          song.Approved === '' || 
+                          song.Approved === 'NULL';
+      console.log(`Song ${song.id} (${song.name}): Approved="${song.Approved}", isUnreviewed=${isUnreviewed}`);
+      return isUnreviewed;
+    });
+    console.log('Total songs:', songs.length);
+    console.log('Unreviewed songs:', unreviewed.length, unreviewed);
     return unreviewed.length > 0 ? unreviewed[0] : null;
   };
 
@@ -64,6 +73,7 @@ const Index = () => {
   }, []);
 
   useEffect(() => {
+    console.log('Setting current song from songs:', songs.length);
     setCurrentSong(getNextSong());
   }, [songs]);
 
@@ -174,6 +184,16 @@ const Index = () => {
     });
   };
 
+  // Helper function to count unreviewed songs
+  const getUnreviewedCount = () => {
+    return songs.filter(s => 
+      s.Approved === null || 
+      s.Approved === undefined || 
+      s.Approved === '' || 
+      s.Approved === 'NULL'
+    ).length;
+  };
+
   if (isInitialLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-black flex items-center justify-center">
@@ -240,7 +260,7 @@ const Index = () => {
           <span>•</span>
           <span>Rejected: {songs.filter(s => s.Approved === 'no').length}</span>
           <span>•</span>
-          <span>Remaining: {songs.filter(s => s.Approved === null || s.Approved === '').length}</span>
+          <span>Remaining: {getUnreviewedCount()}</span>
         </div>
       </footer>
     </div>
