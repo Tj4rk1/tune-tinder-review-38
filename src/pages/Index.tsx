@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import MusicCard from '@/components/MusicCard';
 import CompletionMessage from '@/components/CompletionMessage';
@@ -37,6 +38,7 @@ const Index = () => {
         return;
       }
 
+      console.log('Fetched songs:', data);
       setSongs(data || []);
     } catch (error) {
       console.error('Error fetching songs:', error);
@@ -50,9 +52,10 @@ const Index = () => {
     }
   };
 
-  // Get next unreviewed song
+  // Get next unreviewed song - properly handle null/empty values
   const getNextSong = () => {
-    const unreviewed = songs.filter(song => !song.Approved);
+    const unreviewed = songs.filter(song => song.Approved === null || song.Approved === '');
+    console.log('Unreviewed songs:', unreviewed);
     return unreviewed.length > 0 ? unreviewed[0] : null;
   };
 
@@ -237,7 +240,7 @@ const Index = () => {
           <span>•</span>
           <span>Rejected: {songs.filter(s => s.Approved === 'no').length}</span>
           <span>•</span>
-          <span>Remaining: {songs.filter(s => !s.Approved).length}</span>
+          <span>Remaining: {songs.filter(s => s.Approved === null || s.Approved === '').length}</span>
         </div>
       </footer>
     </div>
