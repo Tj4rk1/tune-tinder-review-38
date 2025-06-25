@@ -1,7 +1,7 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { Play, Pause, Volume2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import AudioWaveform from './AudioWaveform';
 
 interface AudioPlayerProps {
   src: string;
@@ -107,10 +107,10 @@ const AudioPlayer = ({ src }: AudioPlayerProps) => {
         </Button>
       </div>
 
-      {/* Progress Bar with Waveform and Hover Slider */}
+      {/* Progress Bar with Hover Slider */}
       <div className="space-y-3">
         <div 
-          className="relative cursor-pointer group h-15"
+          className="relative cursor-pointer group"
           onMouseEnter={() => setIsProgressHovered(true)}
           onMouseLeave={() => {
             if (!isDragging) {
@@ -122,29 +122,17 @@ const AudioPlayer = ({ src }: AudioPlayerProps) => {
           onMouseUp={handleMouseUp}
           ref={progressBarRef}
         >
-          {/* Waveform Background - appears on hover */}
-          <AudioWaveform 
-            audioRef={audioRef}
-            isHovered={isProgressHovered || isDragging}
-            currentTime={currentTime}
-            duration={duration}
-          />
-          
-          {/* Traditional Progress Bar - always visible */}
-          <div className={`absolute bottom-0 left-0 right-0 transition-opacity duration-300 ${
-            isProgressHovered || isDragging ? 'opacity-50' : 'opacity-100'
-          }`}>
-            <div className="progress-bar h-1 w-full transition-all duration-200 group-hover:h-2">
-              <div 
-                className="absolute top-0 left-0 h-full bg-gradient-to-r from-pink-400 to-purple-500 rounded-full transition-all duration-300"
-                style={{ width: `${progress}%` }}
-              />
-            </div>
+          {/* Background Track */}
+          <div className="progress-bar h-1 w-full transition-all duration-200 group-hover:h-2">
+            <div 
+              className="absolute top-0 left-0 h-full bg-gradient-to-r from-pink-400 to-purple-500 rounded-full transition-all duration-300"
+              style={{ width: `${progress}%` }}
+            />
           </div>
           
           {/* Interactive Slider Handle - appears on hover */}
           <div 
-            className={`absolute bottom-0 -translate-y-1/2 w-4 h-4 rounded-full bg-white shadow-lg transition-all duration-200 ${
+            className={`absolute top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-white shadow-lg transition-all duration-200 ${
               isProgressHovered || isDragging 
                 ? 'opacity-100 scale-100' 
                 : 'opacity-0 scale-75'
@@ -162,7 +150,7 @@ const AudioPlayer = ({ src }: AudioPlayerProps) => {
           <div 
             className={`absolute inset-0 rounded-full transition-all duration-200 ${
               isProgressHovered || isDragging 
-                ? 'bg-gradient-to-r from-pink-400/10 to-purple-500/10' 
+                ? 'bg-gradient-to-r from-pink-400/20 to-purple-500/20' 
                 : ''
             }`}
             style={{
