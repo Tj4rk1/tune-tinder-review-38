@@ -32,12 +32,13 @@ const MusicCard = ({ song, onApprove, onReject, isLoading = false }: MusicCardPr
 
   return (
     <div
-      className={`music-card w-full max-w-sm mx-auto p-8 text-white relative cursor-grab transition-all duration-200 ${
+      className={`music-card w-full max-w-sm mx-auto p-8 text-white relative cursor-grab transition-all duration-200 touch-none select-none ${
         isDragging ? 'cursor-grabbing shadow-2xl' : ''
       }`}
       style={{
         transform: `translateX(${dragPosition}px) rotate(${rotation}deg) scale(${scale})`,
         transition: isDragging ? 'none' : 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+        touchAction: 'pan-y',
       }}
       {...handlers}
     >

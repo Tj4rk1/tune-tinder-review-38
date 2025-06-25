@@ -28,13 +28,23 @@ export const useSwipe = ({ onSwipeLeft, onSwipeRight, threshold = 100 }: SwipeOp
       return;
     }
     
+    // Prevent default browser behavior for touch events
+    if (event.type.startsWith('touch')) {
+      event.preventDefault();
+    }
+    
     setIsDragging(true);
     setStartPosition(clientX);
     setDragPosition(0);
   }, []);
 
-  const handleMove = useCallback((clientX: number) => {
+  const handleMove = useCallback((clientX: number, event?: TouchEvent | MouseEvent) => {
     if (!isDragging) return;
+    
+    // Prevent default browser behavior during active dragging
+    if (event && event.type.startsWith('touch')) {
+      event.preventDefault();
+    }
     
     const deltaX = clientX - startPosition;
     setDragPosition(deltaX);
@@ -58,11 +68,11 @@ export const useSwipe = ({ onSwipeLeft, onSwipeRight, threshold = 100 }: SwipeOp
 
   const handlers = {
     onMouseDown: (e: React.MouseEvent) => handleStart(e.clientX, e.nativeEvent),
-    onMouseMove: (e: React.MouseEvent) => handleMove(e.clientX),
+    onMouseMove: (e: React.MouseEvent) => handleMove(e.clientX, e.nativeEvent),
     onMouseUp: handleEnd,
     onMouseLeave: handleEnd,
     onTouchStart: (e: React.TouchEvent) => handleStart(e.touches[0].clientX, e.nativeEvent),
-    onTouchMove: (e: React.TouchEvent) => handleMove(e.touches[0].clientX),
+    onTouchMove: (e: React.TouchEvent) => handleMove(e.touches[0].clientX, e.nativeEvent),
     onTouchEnd: handleEnd,
   };
 
