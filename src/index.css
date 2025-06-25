@@ -204,7 +204,7 @@
 }
 
 @keyframes pulse-glow {
-  0%, 40% {
+  0%, 10% {
     box-shadow: var(--neon-glow);
   }
   50% {
