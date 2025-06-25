@@ -2,7 +2,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Play, Pause, Volume2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Slider } from '@/components/ui/slider';
 
 interface AudioPlayerProps {
   src: string;
@@ -13,7 +12,10 @@ const AudioPlayer = ({ src }: AudioPlayerProps) => {
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(70);
+  const [isProgressHovered, setIsProgressHovered] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
+  const progressBarRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -51,13 +53,32 @@ const AudioPlayer = ({ src }: AudioPlayerProps) => {
     setIsPlaying(!isPlaying);
   };
 
-  const handleSeek = (value: number[]) => {
+  const handleProgressClick = (e: React.MouseEvent<HTMLDivElement>) => {
     const audio = audioRef.current;
-    if (audio && duration) {
-      const newTime = (value[0] / 100) * duration;
-      audio.currentTime = newTime;
-      setCurrentTime(newTime);
-    }
+    const progressBar = progressBarRef.current;
+    if (!audio || !progressBar || !duration) return;
+
+    const rect = progressBar.getBoundingClientRect();
+    const clickX = e.clientX - rect.left;
+    const percentage = clickX / rect.width;
+    const newTime = percentage * duration;
+    
+    audio.currentTime = newTime;
+    setCurrentTime(newTime);
+  };
+
+  const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
+    setIsDragging(true);
+    handleProgressClick(e);
+  };
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!isDragging) return;
+    handleProgressClick(e);
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
   };
 
   const formatTime = (time: number) => {
@@ -86,16 +107,58 @@ const AudioPlayer = ({ src }: AudioPlayerProps) => {
         </Button>
       </div>
 
-      {/* Progress Bar */}
+      {/* Progress Bar with Hover Slider */}
       <div className="space-y-3">
-        <div className="relative">
-          <div className="progress-bar h-1 w-full">
+        <div 
+          className="relative cursor-pointer group"
+          onMouseEnter={() => setIsProgressHovered(true)}
+          onMouseLeave={() => {
+            if (!isDragging) {
+              setIsProgressHovered(false);
+            }
+          }}
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+          ref={progressBarRef}
+        >
+          {/* Background Track */}
+          <div className="progress-bar h-1 w-full transition-all duration-200 group-hover:h-2">
             <div 
               className="absolute top-0 left-0 h-full bg-gradient-to-r from-pink-400 to-purple-500 rounded-full transition-all duration-300"
               style={{ width: `${progress}%` }}
             />
           </div>
+          
+          {/* Interactive Slider Handle - appears on hover */}
+          <div 
+            className={`absolute top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-white shadow-lg transition-all duration-200 ${
+              isProgressHovered || isDragging 
+                ? 'opacity-100 scale-100' 
+                : 'opacity-0 scale-75'
+            }`}
+            style={{ 
+              left: `calc(${progress}% - 8px)`,
+              background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.7))',
+              backdropFilter: 'blur(10px)',
+              border: '1px solid rgba(255, 255, 255, 0.3)',
+              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15), 0 0 20px rgba(255, 154, 158, 0.3)'
+            }}
+          />
+          
+          {/* Hover Enhancement */}
+          <div 
+            className={`absolute inset-0 rounded-full transition-all duration-200 ${
+              isProgressHovered || isDragging 
+                ? 'bg-gradient-to-r from-pink-400/20 to-purple-500/20' 
+                : ''
+            }`}
+            style={{
+              backdropFilter: isProgressHovered || isDragging ? 'blur(5px)' : 'none'
+            }}
+          />
         </div>
+        
         <div className="flex justify-between text-sm text-white/80">
           <span>{formatTime(currentTime)}</span>
           <span>{formatTime(duration)}</span>
@@ -105,8 +168,8 @@ const AudioPlayer = ({ src }: AudioPlayerProps) => {
       {/* Volume Control */}
       <div className="flex items-center gap-3 pt-4">
         <Volume2 className="w-4 h-4 text-white/70" />
-        <div className="flex-1 relative">
-          <div className="progress-bar h-1 w-full">
+        <div className="flex-1 relative group">
+          <div className="progress-bar h-1 w-full transition-all duration-200 group-hover:h-2">
             <div 
               className="absolute top-0 left-0 h-full bg-gradient-to-r from-pink-400 to-purple-500 rounded-full transition-all duration-300"
               style={{ width: `${volume}%` }}
@@ -119,6 +182,18 @@ const AudioPlayer = ({ src }: AudioPlayerProps) => {
             value={volume}
             onChange={(e) => setVolume(Number(e.target.value))}
             className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+          />
+          
+          {/* Volume Handle */}
+          <div 
+            className="absolute top-1/2 -translate-y-1/2 w-3 h-3 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-200"
+            style={{ 
+              left: `calc(${volume}% - 6px)`,
+              background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.7))',
+              backdropFilter: 'blur(10px)',
+              border: '1px solid rgba(255, 255, 255, 0.3)',
+              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)'
+            }}
           />
         </div>
       </div>
