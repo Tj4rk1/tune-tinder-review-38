@@ -11,6 +11,7 @@ export type Database = {
     Tables: {
       "Storage Generative Music": {
         Row: {
+          Approved: string | null
           audioURL: string | null
           created_at: string
           duration: string | null
@@ -22,6 +23,7 @@ export type Database = {
           trackId: string | null
         }
         Insert: {
+          Approved?: string | null
           audioURL?: string | null
           created_at?: string
           duration?: string | null
@@ -33,6 +35,7 @@ export type Database = {
           trackId?: string | null
         }
         Update: {
+          Approved?: string | null
           audioURL?: string | null
           created_at?: string
           duration?: string | null

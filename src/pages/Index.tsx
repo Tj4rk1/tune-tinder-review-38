@@ -5,59 +5,90 @@ import CompletionMessage from '@/components/CompletionMessage';
 import { Button } from '@/components/ui/button';
 import { RefreshCw, Music } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
-
-// Mock data for development - this will be replaced with Supabase data
-const mockSongs = [
-  {
-    id: '1',
-    title: 'Ethereal Dreams',
-    stream_url: 'https://www.soundjay.com/misc/sounds/bell-ringing-05.mp3',
-    approved: null
-  },
-  {
-    id: '2',
-    title: 'Digital Horizons',
-    stream_url: 'https://www.soundjay.com/misc/sounds/bell-ringing-05.mp3',
-    approved: null
-  },
-  {
-    id: '3',
-    title: 'Synthetic Melodies',
-    stream_url: 'https://www.soundjay.com/misc/sounds/bell-ringing-05.mp3',
-    approved: null
-  }
-];
+import { supabase } from '@/integrations/supabase/client';
 
 interface Song {
-  id: string;
-  title: string;
-  stream_url: string;
-  approved: boolean | null;
+  id: number;
+  name: string;
+  streamURL: string;
+  Approved: string | null;
 }
 
 const Index = () => {
-  const [songs, setSongs] = useState<Song[]>(mockSongs);
+  const [songs, setSongs] = useState<Song[]>([]);
   const [currentSong, setCurrentSong] = useState<Song | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
+
+  // Fetch songs from Supabase
+  const fetchSongs = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('Storage Generative Music')
+        .select('id, name, streamURL, Approved')
+        .order('created_at', { ascending: true });
+
+      if (error) {
+        console.error('Error fetching songs:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load tracks from database.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      setSongs(data || []);
+    } catch (error) {
+      console.error('Error fetching songs:', error);
+      toast({
+        title: "Error",
+        description: "Failed to connect to database.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsInitialLoading(false);
+    }
+  };
 
   // Get next unreviewed song
   const getNextSong = () => {
-    const unreviewed = songs.filter(song => song.approved === null);
+    const unreviewed = songs.filter(song => !song.Approved);
     return unreviewed.length > 0 ? unreviewed[0] : null;
   };
+
+  useEffect(() => {
+    fetchSongs();
+  }, []);
 
   useEffect(() => {
     setCurrentSong(getNextSong());
   }, [songs]);
 
-  const handleApprove = async (songId: string) => {
+  const handleApprove = async (songId: number) => {
     setIsLoading(true);
     console.log('Approving song:', songId);
 
     try {
-      // Update local state (in real app, this would update Supabase)
+      // Update song in Supabase with "yes" for approved
+      const { error } = await supabase
+        .from('Storage Generative Music')
+        .update({ Approved: 'yes' })
+        .eq('id', songId);
+
+      if (error) {
+        console.error('Error updating song:', error);
+        toast({
+          title: "Error",
+          description: "Failed to approve track. Please try again.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Update local state
       setSongs(prev => prev.map(song => 
-        song.id === songId ? { ...song, approved: true } : song
+        song.id === songId ? { ...song, Approved: 'yes' } : song
       ));
 
       // Optional webhook call for approved songs
@@ -90,14 +121,30 @@ const Index = () => {
     }
   };
 
-  const handleReject = async (songId: string) => {
+  const handleReject = async (songId: number) => {
     setIsLoading(true);
     console.log('Rejecting song:', songId);
 
     try {
-      // Update local state (in real app, this would update Supabase)
+      // Update song in Supabase - leave Approved empty (null)
+      const { error } = await supabase
+        .from('Storage Generative Music')
+        .update({ Approved: null })
+        .eq('id', songId);
+
+      if (error) {
+        console.error('Error updating song:', error);
+        toast({
+          title: "Error",
+          description: "Failed to reject track. Please try again.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Update local state
       setSongs(prev => prev.map(song => 
-        song.id === songId ? { ...song, approved: false } : song
+        song.id === songId ? { ...song, Approved: null } : song
       ));
 
       toast({
@@ -116,13 +163,27 @@ const Index = () => {
     }
   };
 
-  const resetReviews = () => {
-    setSongs(mockSongs);
+  const refreshSongs = () => {
+    setIsInitialLoading(true);
+    fetchSongs();
     toast({
-      title: "Reviews Reset",
-      description: "All tracks are available for review again.",
+      title: "Refreshed",
+      description: "Loaded latest tracks from database.",
     });
   };
+
+  if (isInitialLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-black flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <div className="w-12 h-12 mx-auto bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center animate-pulse">
+            <Music className="w-6 h-6 text-white" />
+          </div>
+          <p className="text-gray-400">Loading tracks...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-black flex flex-col">
@@ -142,9 +203,14 @@ const Index = () => {
         {currentSong ? (
           <div className="w-full max-w-md">
             <MusicCard
-              song={currentSong}
-              onApprove={handleApprove}
-              onReject={handleReject}
+              song={{
+                id: currentSong.id.toString(),
+                title: currentSong.name || 'Untitled Track',
+                stream_url: currentSong.streamURL || '',
+                approved: currentSong.Approved === 'yes' ? true : currentSong.Approved === null ? null : false
+              }}
+              onApprove={() => handleApprove(currentSong.id)}
+              onReject={() => handleReject(currentSong.id)}
               isLoading={isLoading}
             />
           </div>
@@ -153,12 +219,12 @@ const Index = () => {
             <CompletionMessage />
             <div className="text-center">
               <Button
-                onClick={resetReviews}
+                onClick={refreshSongs}
                 variant="outline"
                 className="bg-gray-800/50 border-gray-600 text-gray-300 hover:bg-gray-700/50"
               >
                 <RefreshCw className="w-4 h-4 mr-2" />
-                Reset for Demo
+                Refresh Tracks
               </Button>
             </div>
           </div>
@@ -168,9 +234,9 @@ const Index = () => {
       {/* Footer */}
       <footer className="p-4 text-center text-gray-500 text-sm border-t border-gray-800">
         <div className="flex items-center justify-center gap-4">
-          <span>Reviewed: {songs.filter(s => s.approved !== null).length}</span>
+          <span>Reviewed: {songs.filter(s => s.Approved === 'yes').length}</span>
           <span>•</span>
-          <span>Remaining: {songs.filter(s => s.approved === null).length}</span>
+          <span>Remaining: {songs.filter(s => !s.Approved).length}</span>
         </div>
       </footer>
     </div>
