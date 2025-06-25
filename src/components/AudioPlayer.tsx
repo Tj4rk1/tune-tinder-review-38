@@ -69,49 +69,58 @@ const AudioPlayer = ({ src }: AudioPlayerProps) => {
   const progress = duration ? (currentTime / duration) * 100 : 0;
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <audio ref={audioRef} src={src} preload="metadata" />
       
       {/* Play/Pause Button */}
-      <div className="flex justify-center">
+      <div className="flex justify-center mb-8">
         <Button
           onClick={togglePlayPause}
-          size="lg"
-          className="w-16 h-16 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 shadow-lg"
+          className="play-button border-0 flex items-center justify-center"
         >
           {isPlaying ? (
-            <Pause className="w-8 h-8" />
+            <Pause className="w-8 h-8 text-white" />
           ) : (
-            <Play className="w-8 h-8 ml-1" />
+            <Play className="w-8 h-8 text-white ml-1" />
           )}
         </Button>
       </div>
 
       {/* Progress Bar */}
-      <div className="space-y-2">
-        <Slider
-          value={[progress]}
-          onValueChange={handleSeek}
-          max={100}
-          step={1}
-          className="w-full"
-        />
-        <div className="flex justify-between text-sm text-gray-400">
+      <div className="space-y-3">
+        <div className="relative">
+          <div className="progress-bar h-1 w-full">
+            <div 
+              className="absolute top-0 left-0 h-full bg-gradient-to-r from-pink-400 to-purple-500 rounded-full transition-all duration-300"
+              style={{ width: `${progress}%` }}
+            />
+          </div>
+        </div>
+        <div className="flex justify-between text-sm text-white/80">
           <span>{formatTime(currentTime)}</span>
           <span>{formatTime(duration)}</span>
         </div>
       </div>
 
       {/* Volume Control */}
-      <div className="flex items-center gap-2">
-        <Volume2 className="w-4 h-4 text-gray-400" />
-        <Slider
-          value={[volume]}
-          onValueChange={(value) => setVolume(value[0])}
-          max={100}
-          step={1}
-          className="flex-1"
-        />
+      <div className="flex items-center gap-3 pt-4">
+        <Volume2 className="w-4 h-4 text-white/70" />
+        <div className="flex-1 relative">
+          <div className="progress-bar h-1 w-full">
+            <div 
+              className="absolute top-0 left-0 h-full bg-gradient-to-r from-pink-400 to-purple-500 rounded-full transition-all duration-300"
+              style={{ width: `${volume}%` }}
+            />
+          </div>
+          <input
+            type="range"
+            min="0"
+            max="100"
+            value={volume}
+            onChange={(e) => setVolume(Number(e.target.value))}
+            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+          />
+        </div>
       </div>
     </div>
   );

@@ -14,9 +14,11 @@ export type Database = {
           Approved: string | null
           audioURL: string | null
           created_at: string
+          Downloaded: string | null
           duration: string | null
           genre: string | null
           id: number
+          "lyrics generated": string | null
           name: string | null
           streamURL: string | null
           tags: string | null
@@ -26,9 +28,11 @@ export type Database = {
           Approved?: string | null
           audioURL?: string | null
           created_at?: string
+          Downloaded?: string | null
           duration?: string | null
           genre?: string | null
           id?: number
+          "lyrics generated"?: string | null
           name?: string | null
           streamURL?: string | null
           tags?: string | null
@@ -38,9 +42,11 @@ export type Database = {
           Approved?: string | null
           audioURL?: string | null
           created_at?: string
+          Downloaded?: string | null
           duration?: string | null
           genre?: string | null
           id?: number
+          "lyrics generated"?: string | null
           name?: string | null
           streamURL?: string | null
           tags?: string | null

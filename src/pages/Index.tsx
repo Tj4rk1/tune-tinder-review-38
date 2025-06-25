@@ -263,28 +263,30 @@ const Index = () => {
 
   if (isInitialLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-black flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center">
         <div className="text-center space-y-4">
-          <div className="w-12 h-12 mx-auto bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center animate-pulse">
+          <div className="w-12 h-12 mx-auto bg-gradient-to-r from-pink-400 to-purple-500 rounded-full flex items-center justify-center animate-pulse">
             <Music className="w-6 h-6 text-white" />
           </div>
-          <p className="text-gray-400">Loading tracks...</p>
+          <p className="text-white/70">Loading tracks...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-black flex flex-col">
+    <div className="min-h-screen flex flex-col">
       {/* Header */}
-      <header className="p-6 text-center border-b border-gray-800">
-        <div className="flex items-center justify-center gap-3 mb-2">
-          <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
-            <Music className="w-6 h-6 text-white" />
+      <header className="p-6 text-center">
+        <div className="music-card max-w-md mx-auto p-6">
+          <div className="flex items-center justify-center gap-3 mb-2">
+            <div className="w-10 h-10 bg-gradient-to-r from-pink-400 to-purple-500 rounded-lg flex items-center justify-center">
+              <Music className="w-6 h-6 text-white" />
+            </div>
+            <h1 className="text-2xl font-bold text-white">AI Music Review</h1>
           </div>
-          <h1 className="text-3xl font-bold text-white">AI Music Review</h1>
+          <p className="text-white/70 text-sm">Swipe through AI-generated tracks • Like or dislike to review</p>
         </div>
-        <p className="text-gray-400">Swipe through AI-generated tracks • Like or dislike to review</p>
       </header>
 
       {/* Main Content */}
@@ -306,13 +308,13 @@ const Index = () => {
         ) : (
           <div className="space-y-6">
             {songs.length === 0 ? (
-              <div className="text-center space-y-4">
-                <div className="w-16 h-16 mx-auto bg-gray-800 rounded-full flex items-center justify-center">
-                  <Music className="w-8 h-8 text-gray-400" />
+              <div className="music-card max-w-md mx-auto text-center space-y-4 p-8">
+                <div className="w-16 h-16 mx-auto bg-gradient-to-r from-pink-400 to-purple-500 rounded-full flex items-center justify-center">
+                  <Music className="w-8 h-8 text-white" />
                 </div>
                 <h2 className="text-2xl font-bold text-white">No Tracks Found</h2>
-                <p className="text-gray-400">There are no tracks in the database yet.</p>
-                <p className="text-gray-500 text-sm">Check the console for detailed debugging information.</p>
+                <p className="text-white/70">There are no tracks in the database yet.</p>
+                <p className="text-white/50 text-sm">Check the console for detailed debugging information.</p>
               </div>
             ) : (
               <CompletionMessage />
@@ -320,8 +322,7 @@ const Index = () => {
             <div className="text-center">
               <Button
                 onClick={refreshSongs}
-                variant="outline"
-                className="bg-gray-800/50 border-gray-600 text-gray-300 hover:bg-gray-700/50"
+                className="glass-button text-white/80 hover:text-white"
               >
                 <RefreshCw className="w-4 h-4 mr-2" />
                 Refresh Tracks
@@ -332,13 +333,15 @@ const Index = () => {
       </main>
 
       {/* Footer */}
-      <footer className="p-4 text-center text-gray-500 text-sm border-t border-gray-800">
-        <div className="flex items-center justify-center gap-4">
-          <span>Approved: {songs.filter(s => s.Approved === 'yes').length}</span>
-          <span>•</span>
-          <span>Rejected: {songs.filter(s => s.Approved === 'no').length}</span>
-          <span>•</span>
-          <span>Remaining: {getUnreviewedCount()}</span>
+      <footer className="p-4 text-center">
+        <div className="music-card max-w-md mx-auto p-4">
+          <div className="flex items-center justify-center gap-4 text-sm text-white/70">
+            <span>Approved: {songs.filter(s => s.Approved === 'yes').length}</span>
+            <span>•</span>
+            <span>Rejected: {songs.filter(s => s.Approved === 'no').length}</span>
+            <span>•</span>
+            <span>Remaining: {getUnreviewedCount()}</span>
+          </div>
         </div>
       </footer>
     </div>
