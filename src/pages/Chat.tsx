@@ -184,74 +184,75 @@ export default function Chat() {
   }, {} as Record<string, Category[]>);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background/95 to-background/90 p-4">
-      {/* Gradient Background */}
-      <div className="fixed inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 pointer-events-none" />
+    <div className="min-h-screen relative overflow-hidden">
+      {/* Enhanced Background with multiple gradients */}
+      <div className="fixed inset-0 bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900" />
+      <div className="fixed inset-0 bg-gradient-to-tr from-purple-900/30 via-transparent to-pink-900/30" />
+      <div className="fixed inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-blue-400/20 via-transparent to-transparent" />
+      <div className="fixed inset-0 bg-[radial-gradient(ellipse_at_bottom_left,_var(--tw-gradient-stops))] from-purple-400/20 via-transparent to-transparent" />
       
-      <div className="relative z-10 max-w-2xl mx-auto space-y-6">
-        <Card className="backdrop-blur-sm bg-card/80 border-primary/20">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                Chat Interface
-              </CardTitle>
+      <div className="relative z-10 min-h-screen flex items-center justify-center p-4">
+        <div className="w-full max-w-md">
+          <div className="bg-white/10 backdrop-blur-lg border border-white/20 rounded-3xl p-8 shadow-2xl">
+            {/* Header */}
+            <div className="text-center mb-8">
+              <h1 className="text-3xl font-bold text-white mb-2">Chat Interface</h1>
               <Link to="/">
-                <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
+                <button className="text-white/70 hover:text-white transition-colors text-sm flex items-center justify-center mx-auto">
                   <ArrowLeft className="w-4 h-4 mr-2" />
                   Zurück
-                </Button>
+                </button>
               </Link>
             </div>
-          </CardHeader>
-          <CardContent className="space-y-6">
+
             <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Nachricht Eingabe */}
-              <div className="space-y-2">
-                <label htmlFor="message" className="text-sm font-medium">
+              {/* Message Input */}
+              <div className="space-y-3">
+                <label className="text-white/90 text-sm font-medium block">
                   Ihre Nachricht
                 </label>
-                <Textarea
-                  id="message"
-                  placeholder="Geben Sie hier Ihre Nachricht ein..."
-                  value={message}
-                  onChange={(e) => setMessage(e.target.value)}
-                  className="min-h-[120px] resize-none"
-                  disabled={isSubmitting}
-                />
+                <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-4">
+                  <Textarea
+                    placeholder="Geben Sie hier Ihre Nachricht ein..."
+                    value={message}
+                    onChange={(e) => setMessage(e.target.value)}
+                    className="bg-transparent border-none resize-none text-white placeholder:text-white/50 focus:ring-0 p-0 min-h-[100px]"
+                    disabled={isSubmitting}
+                  />
+                </div>
               </div>
 
-              {/* Kategorien Dropdown */}
-              <div className="space-y-2">
-                <label className="text-sm font-medium">
+              {/* Categories Dropdown */}
+              <div className="space-y-3">
+                <label className="text-white/90 text-sm font-medium block">
                   Kategorien auswählen
                 </label>
                 
                 <Popover open={open} onOpenChange={setOpen}>
                   <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      role="combobox"
-                      aria-expanded={open}
-                      className="w-full justify-between"
+                    <button
+                      type="button"
+                      className="w-full bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-4 text-left text-white/90 hover:bg-white/20 transition-colors flex items-center justify-between"
                       disabled={isSubmitting}
                     >
                       {selectedOptions.length > 0
                         ? `${selectedOptions.length} Kategorie(n) ausgewählt`
                         : "Kategorien auswählen..."}
-                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                    </Button>
+                      <ChevronsUpDown className="h-4 w-4 opacity-50" />
+                    </button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-full p-0">
+                  <PopoverContent className="w-full p-0 bg-slate-800/95 backdrop-blur-lg border-white/20">
                     <Command>
                       <CommandInput 
                         placeholder="Kategorien durchsuchen..." 
                         value={searchValue}
                         onValueChange={setSearchValue}
+                        className="text-white"
                       />
                       <CommandList>
                         <CommandEmpty>
                           <div className="p-4 space-y-2">
-                            <p className="text-sm text-muted-foreground">Keine Kategorien gefunden.</p>
+                            <p className="text-sm text-white/70">Keine Kategorien gefunden.</p>
                             <div className="flex gap-2">
                               <Input
                                 placeholder="Neue Kategorie"
@@ -263,11 +264,13 @@ export default function Chat() {
                                     addNewCategory();
                                   }
                                 }}
+                                className="bg-white/10 border-white/20 text-white"
                               />
                               <Button
                                 size="sm"
                                 onClick={addNewCategory}
                                 disabled={isAddingCategory || !newCategory.trim()}
+                                className="bg-blue-500 hover:bg-blue-600"
                               >
                                 <Plus className="h-4 w-4" />
                               </Button>
@@ -281,12 +284,13 @@ export default function Chat() {
                               <CommandItem
                                 key={category.id}
                                 onSelect={() => toggleOption(category.name)}
-                                className="cursor-pointer"
+                                className="cursor-pointer text-white hover:bg-white/10"
                               >
                                 <div className="flex items-center space-x-2">
                                   <Checkbox
                                     checked={selectedOptions.includes(category.name)}
                                     onCheckedChange={() => {}}
+                                    className="border-white/30"
                                   />
                                   <span>{category.name}</span>
                                 </div>
@@ -301,7 +305,7 @@ export default function Chat() {
                           </CommandGroup>
                         ))}
 
-                        {/* Neue Kategorie hinzufügen Sektion */}
+                        {/* New Category Section */}
                         <CommandGroup heading="Neue Kategorie hinzufügen">
                           <div className="p-2 space-y-2">
                             <div className="flex gap-2">
@@ -315,11 +319,13 @@ export default function Chat() {
                                     addNewCategory();
                                   }
                                 }}
+                                className="bg-white/10 border-white/20 text-white"
                               />
                               <Button
                                 size="sm"
                                 onClick={addNewCategory}
                                 disabled={isAddingCategory || !newCategory.trim()}
+                                className="bg-blue-500 hover:bg-blue-600"
                               >
                                 <Plus className="h-4 w-4" />
                               </Button>
@@ -331,41 +337,39 @@ export default function Chat() {
                   </PopoverContent>
                 </Popover>
 
-                {/* Ausgewählte Kategorien anzeigen */}
+                {/* Selected Categories */}
                 {selectedOptions.length > 0 && (
-                  <div className="flex flex-wrap gap-2 mt-2">
+                  <div className="flex flex-wrap gap-2 mt-3">
                     {selectedOptions.map((option) => (
-                      <Badge
+                      <div
                         key={option}
-                        variant="secondary"
-                        className="gap-1"
+                        className="bg-white/20 backdrop-blur-sm border border-white/30 rounded-full px-3 py-1 text-sm text-white flex items-center gap-2"
                       >
                         {option}
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-auto p-0 hover:bg-transparent"
+                        <button
+                          type="button"
                           onClick={() => removeOption(option)}
+                          className="hover:bg-white/20 rounded-full p-0.5 transition-colors"
                         >
                           <X className="h-3 w-3" />
-                        </Button>
-                      </Badge>
+                        </button>
+                      </div>
                     ))}
                   </div>
                 )}
               </div>
 
               {/* Submit Button */}
-              <Button 
-                type="submit" 
-                className="w-full"
+              <button
+                type="submit"
                 disabled={isSubmitting || !message.trim() || selectedOptions.length === 0}
+                className="w-full bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 hover:from-pink-600 hover:via-purple-600 hover:to-indigo-600 disabled:from-gray-500 disabled:via-gray-500 disabled:to-gray-500 text-white font-semibold py-4 px-6 rounded-2xl transition-all duration-300 transform hover:scale-[1.02] disabled:hover:scale-100 shadow-lg"
               >
                 {isSubmitting ? "Wird gesendet..." : "Absenden"}
-              </Button>
+              </button>
             </form>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
     </div>
   );
