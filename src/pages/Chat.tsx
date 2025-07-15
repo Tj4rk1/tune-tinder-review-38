@@ -241,13 +241,13 @@ export default function Chat() {
                       <ChevronsUpDown className="h-4 w-4 opacity-50" />
                     </button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-full p-0 bg-slate-800/95 backdrop-blur-lg border-white/20">
-                    <Command>
+                  <PopoverContent className="w-full p-0 bg-slate-900/95 backdrop-blur-xl border border-white/30 rounded-2xl shadow-2xl">
+                    <Command className="bg-transparent">
                       <CommandInput 
                         placeholder="Kategorien durchsuchen..." 
                         value={searchValue}
                         onValueChange={setSearchValue}
-                        className="text-white"
+                        className="text-white placeholder:text-white/60 bg-white/10 border-white/20"
                       />
                       <CommandList>
                         <CommandEmpty>
@@ -279,7 +279,7 @@ export default function Chat() {
                         </CommandEmpty>
 
                         {Object.entries(groupedCategories).map(([type, typeCategories]) => (
-                          <CommandGroup key={type} heading={type.charAt(0).toUpperCase() + type.slice(1)}>
+                          <CommandGroup key={type} heading={type.charAt(0).toUpperCase() + type.slice(1)} className="text-white/80">
                             {typeCategories.map((category) => (
                               <CommandItem
                                 key={category.id}
@@ -306,7 +306,7 @@ export default function Chat() {
                         ))}
 
                         {/* New Category Section */}
-                        <CommandGroup heading="Neue Kategorie hinzufügen">
+                        <CommandGroup heading="Neue Kategorie hinzufügen" className="text-white/80">
                           <div className="p-2 space-y-2">
                             <div className="flex gap-2">
                               <Input
