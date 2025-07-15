@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import MusicCard from '@/components/MusicCard';
 import CompletionMessage from '@/components/CompletionMessage';
 import { Button } from '@/components/ui/button';
-import { RefreshCw, Music } from 'lucide-react';
+import { RefreshCw, Music, MessageSquare } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -279,11 +280,19 @@ const Index = () => {
       {/* Header */}
       <header className="p-6 text-center">
         <div className="music-card max-w-md mx-auto p-6">
-          <div className="flex items-center justify-center gap-3 mb-2">
-            <div className="w-10 h-10 bg-gradient-to-r from-pink-400 to-purple-500 rounded-lg flex items-center justify-center">
-              <Music className="w-6 h-6 text-white" />
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-gradient-to-r from-pink-400 to-purple-500 rounded-lg flex items-center justify-center">
+                <Music className="w-6 h-6 text-white" />
+              </div>
+              <h1 className="text-2xl font-bold text-white">AI Music Review</h1>
             </div>
-            <h1 className="text-2xl font-bold text-white">AI Music Review</h1>
+            <Link to="/chat">
+              <Button variant="ghost" size="sm" className="text-white/70 hover:text-white hover:bg-white/10">
+                <MessageSquare className="w-4 h-4 mr-2" />
+                Chat
+              </Button>
+            </Link>
           </div>
           <p className="text-white/70 text-sm">Swipe through AI-generated tracks • Like or dislike to review</p>
         </div>
