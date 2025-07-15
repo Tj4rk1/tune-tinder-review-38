@@ -122,7 +122,7 @@ export default function Chat() {
 
       // Daten an n8n Webhook senden
       try {
-        await fetch('https://n8n.stoked-ai.com/webhook-test/1c39cab7-2d7f-49c0-97b3-9769aa0934a1', {
+        await fetch('https://n8n.stoked-ai.com/webhook-test/0b58a8b4-e147-414f-8723-9df018331b4b', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
